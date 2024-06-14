@@ -1,0 +1,65 @@
+import numpy as np
+
+# Activation function and its derivative
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+def sigmoid_derivative(x):
+    return x * (1 - x)
+
+# XOR dataset
+inputs = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
+outputs = np.array([[0], [1], [1], [0]])
+
+# Network parameters
+input_layer_neurons = inputs.shape[1]  # Number of input neurons
+hidden_layer_neurons = 2  # Number of hidden neurons
+output_neurons = 1  # Number of output neurons
+learning_rate = 0.1  # Learning rate
+epochs = 10000  # Number of training iterations
+
+# Initialize weights and biases
+hidden_weights = np.random.uniform(size=(input_layer_neurons, hidden_layer_neurons))
+hidden_bias = np.random.uniform(size=(1, hidden_layer_neurons))
+output_weights = np.random.uniform(size=(hidden_layer_neurons, output_neurons))
+output_bias = np.random.uniform(size=(1, output_neurons))
+
+# Training process
+for epoch in range(epochs):
+    # Forward propagation
+    hidden_layer_input = np.dot(inputs, hidden_weights) + hidden_bias
+    hidden_layer_activation = sigmoid(hidden_layer_input)
+    output_layer_input = np.dot(hidden_layer_activation, output_weights) + output_bias
+    predicted_output = sigmoid(output_layer_input)
+    
+    # Calculate error
+    error = outputs - predicted_output
+    
+    # Backpropagation
+    d_predicted_output = error * sigmoid_derivative(predicted_output)
+    error_hidden_layer = d_predicted_output.dot(output_weights.T)
+    d_hidden_layer = error_hidden_layer * sigmoid_derivative(hidden_layer_activation)
+    
+    # Update weights and biases
+    output_weights += hidden_layer_activation.T.dot(d_predicted_output) * learning_rate
+    output_bias += np.sum(d_predicted_output, axis=0, keepdims=True) * learning_rate
+    hidden_weights += inputs.T.dot(d_hidden_layer) * learning_rate
+    hidden_bias += np.sum(d_hidden_layer, axis=0, keepdims=True) * learning_rate
+    
+    # Print the error every 1000 epochs
+    if epoch % 1000 == 0:
+        print(f"Epoch {epoch}, Error: {np.mean(np.abs(error))}")
+
+# Testing the network
+print("Final weights and biases after training:")
+print("Hidden weights:\n", hidden_weights)
+print("Hidden bias:\n", hidden_bias)
+print("Output weights:\n", output_weights)
+print("Output bias:\n", output_bias)
+
+# Predicting
+hidden_layer_input = np.dot(inputs, hidden_weights) + hidden_bias
+hidden_layer_activation = sigmoid(hidden_layer_input)
+output_layer_input = np.dot(hidden_layer_activation, output_weights) + output_bias
+predicted_output = sigmoid(output_layer_input)
+print("Predicted output:\n", predicted_output)

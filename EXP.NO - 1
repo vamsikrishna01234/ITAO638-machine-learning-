@@ -1,0 +1,38 @@
+import csv
+
+def read_csv(file_path):
+    with open(file_path, 'r') as file:
+        data = list(csv.reader(file))
+    return data
+
+def find_s_algorithm(data):
+    # Initialize the hypothesis to the first positive example
+    hypothesis = None
+    
+    for instance in data:
+        if instance[-1] == 'Yes':  # We are only interested in positive examples
+            if hypothesis is None:
+                hypothesis = instance[:-1]  # Remove the class label and set as hypothesis
+            else:
+                for i in range(len(hypothesis)):
+                    if hypothesis[i] != instance[i]:
+                        hypothesis[i] = '?'  # Replace differing attributes with '?'
+    
+    return hypothesis
+
+# Main function
+def main():
+    # Path to your CSV file
+    file_path = 'training_data.csv'
+    
+    # Read training data
+    data = read_csv(file_path)
+    
+    # Apply FIND-S algorithm
+    hypothesis = find_s_algorithm(data)
+    
+    # Print the most specific hypothesis
+    print("The most specific hypothesis is:", hypothesis)
+
+if __name__ == "__main__":
+    main()

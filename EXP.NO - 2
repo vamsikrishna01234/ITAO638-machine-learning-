@@ -1,0 +1,63 @@
+Read the CSV file:
+
+import pandas as pd
+
+def load_data(file_path):
+    data = pd.read_csv(file_path)
+    return data
+
+data = load_data('your_file.csv')
+Initialize the hypotheses:
+python
+Copy code
+def initialize_hypotheses(num_features):
+    specific_hypothesis = ['0'] * num_features
+    general_hypothesis = [['?'] * num_features]
+    return specific_hypothesis, general_hypothesis
+Update hypotheses:
+python
+Copy code
+def update_hypotheses(specific_h, general_h, instance):
+    if instance[-1] == 'positive':
+        for i in range(len(specific_h)):
+            if specific_h[i] == '0':
+                specific_h[i] = instance[i]
+            elif specific_h[i] != instance[i]:
+                specific_h[i] = '?'
+        
+        general_h = [g for g in general_h if any(g[i] == specific_h[i] or g[i] == '?' for i in range(len(specific_h)))]
+        
+    elif instance[-1] == 'negative':
+        new_general_h = []
+        for g in general_h:
+            for i in range(len(g)):
+                if g[i] == '?' and specific_h[i] != '?':
+                    new_h = g[:i] + [specific_h[i]] + g[i+1:]
+                    if any(new_h[i] != instance[i] and new_h[i] != '?' for i in range(len(new_h))):
+                        new_general_h.append(new_h)
+        general_h.extend(new_general_h)
+        
+        general_h = [g for g in general_h if any(g[i] == '?' for i in range(len(g))) or any(g[i] != instance[i] and g[i] != '?' for i in range(len(g)))]
+
+    return specific_h, general_h
+Run the Candidate-Elimination algorithm:
+python
+Copy code
+def candidate_elimination(data):
+    num_features = data.shape[1] - 1
+    specific_h, general_h = initialize_hypotheses(num_features)
+
+    for i in range(len(data)):
+        instance = data.iloc[i].tolist()
+        specific_h, general_h = update_hypotheses(specific_h, general_h, instance)
+        print(f'Instance {i + 1}: {instance}')
+        print(f'Specific hypothesis: {specific_h}')
+        print(f'General hypotheses: {general_h}')
+        print('---------------------------')
+
+    return specific_h, general_h
+
+data = load_data('your_file.csv')
+specific_h, general_h = candidate_elimination(data)
+print(f'Final Specific hypothesis: {specific_h}')
+print(f'Final General hypotheses: {general_h}')
